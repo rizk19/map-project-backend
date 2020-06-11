@@ -1,0 +1,22 @@
+// app.js
+registerUsbListner()
+
+// usb/service.js
+const socket = require('socket')
+async function registerUsbListner() {
+    onUsbAdd(files => {
+        socket.send(file)
+    })
+}
+
+// usb/socket.js
+function send(file) {
+    // detail implementasi socket sampai bisa send to web
+    conn.emit('???', file)
+}
+
+// usb/listener.js
+function onUsbAdd(cb) {
+    // detail implementasi untuk mendapatkan list file dgn extension .db
+    cb(file)
+}
