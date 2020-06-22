@@ -3,6 +3,8 @@ const { getData } = require("./repository");
 var path = require('path');
 var multer  = require('multer')
 const uploadPath = path.resolve(__dirname, "../core/database/collection")
+// const { sqlite3 } = require("../../core/database");
+// const { logger } = require('../../core/logger');
 var upload = multer({ dest: uploadPath })
 
 router.get("/", async (req, res) => {
@@ -31,6 +33,21 @@ router.post("/", upload.single("uploadedDb"), (req, res) => {
   
   return res.json(req.body);
 });
+
+// router.post("/path", async (req, res) => {
+
+//   let dbUSB = new sqlite3.Database(req.body.path, (err) => {
+//     if (err) {
+//       return logger.error(err.message);
+//     }
+//     logger.info('Connected to the USB SQlite database.');
+//   });
+//   const data = await getLengths(dbUSB);
+//   console.log('data',data);
+  
+  
+//   res.json(req.body);
+// });
 
 router.post('/upload' ,async (req, res) => {
   const length = await getLength()

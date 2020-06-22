@@ -88,60 +88,54 @@ const getDataAll = async (limit, offset) => {
     } catch (error) {
 
     }
-    // return new Promise((resolve, reject) => {
-
-    //     dbsqlite.all(queryCount, (err, counts) => {
-    //         if (err) {
-    //             reject(err)
-    //         }
-    //         let limit = 2
-    //         let maxLoop = Math.ceil(counts[0].total / limit)
-    //         for (let intro = 0; intro < 2; intro++) {
-    //             let offset = (intro) * limit;
-    //             let queryFull = `SELECT waktu, latitude,longitude, course FROM data LIMIT ${limit} OFFSET ${offset}`
-    //             let rawData = []
-    //             datatry = dbsqlite.all(queryFull, (err, rows) => {
-    //                 if (err) {
-    //                     reject(err)
-    //                 }
-    //                 const imageConverter = (params) => {
-    //                     if (params !== null) {
-    //                         return new Uint8Array(params)
-    //                     } else {
-    //                         return null
-    //                     }
-    //                 }
-    //                 rows.forEach(element => {
-    //                     rawData.push({
-    //                         waktu: element.waktu,
-    //                         latitude: element.latitude,
-    //                         longitude: element.longitude,
-    //                         speed: element.speed,
-    //                         course: element.course,
-    //                         // imagedata1: imageConverter(element.imagedata1) ? "data:image/jpeg;base64," + base64ArrayBuffer(imageConverter(element.imagedata1)) : null,
-    //                         // imagedata2: imageConverter(element.imagedata2) ? "data:image/jpeg;base64," + base64ArrayBuffer(imageConverter(element.imagedata2)) : null,
-    //                         // imagedata3: imageConverter(element.imagedata3) ? "data:image/jpeg;base64," + base64ArrayBuffer(imageConverter(element.imagedata3)) : null
-    //                     })
-    //                 });
-    //                 return resolve({
-    //                     data: rawData,
-    //                     status: 'SUCCESS'
-    //                 })
-    //             });
-    //         }
-    //     });
-    // })
 };
 
 const getDataByLimit = (limit, offset, onPage) => {
-    console.log('==>',onPage,'limit',limit,'offset',offset);
-    
+    console.log('==>', onPage, 'limit', limit, 'offset', offset);
+
     return new Promise((resolve, reject) => {
         let queryFull = `SELECT * FROM data LIMIT ${limit} OFFSET ${offset}`
         dbsqlite.all(queryFull, (err, rows) => {
             let rawData = []
             if (err) {
                 return reject({ msg: err, status: 'ERROR' })
+            }
+            const imageConverter = (params) => {
+                if (params !== null) {
+                    return new Uint8Array(params)
+                } else {
+                    return null
+                }
+            }
+            rows.forEach(element => {
+                rawData.push({
+                    waktu: element.waktu,
+                    latitude: element.latitude,
+                    longitude: element.longitude,
+                    speed: element.speed,
+                    course: element.course,
+                    imagedata1: imageConverter(element.imagedata1) ? "data:image/jpeg;base64," + base64ArrayBuffer(imageConverter(element.imagedata1)) : null,
+                    imagedata2: imageConverter(element.imagedata2) ? "data:image/jpeg;base64," + base64ArrayBuffer(imageConverter(element.imagedata2)) : null,
+                    imagedata3: imageConverter(element.imagedata3) ? "data:image/jpeg;base64," + base64ArrayBuffer(imageConverter(element.imagedata3)) : null
+                })
+            });
+            if (rawData) {
+                return resolve(rawData)
+            }
+        })
+    })
+};
+
+const getDataUsbSource = (db, limit, offset, onPage) => {
+    console.log('==>',onPage,'limit',limit,'offset',offset);
+    
+    return new Promise((resolve, reject) => {
+        let queryFull = `SELECT * FROM data LIMIT ${limit} OFFSET ${offset}`
+        db.all(queryFull, (err, rows) => {
+            let rawData = []
+            if (err) {
+                // return reject({ msg: err, status: 'ERROR' })
+                this.loaded = reject(new Error('Resource not yet loaded!'));
             }
             const imageConverter = (params) => {
                 if (params !== null) {
@@ -184,9 +178,27 @@ function getLength() {
     })
 }
 
+function getLengthUsbSource(db) {
+    let queryCount = 'SELECT COUNT(latitude) as total FROM data'
+    return new Promise((resolve, reject) => {
+        db.all(queryCount, (err, rows) => {
+            if (err) {
+                return reject({ msg: err, status: 'ERROR' })
+            }
+            return resolve({
+                total: rows[0].total,
+                status: 'SUCCESS'
+            })
+        });
+    })
+}
+
+
 module.exports = {
     getData,
     getDataAll,
     getLength,
-    getDataByLimit
+    getDataByLimit,
+    getDataUsbSource,
+    getLengthUsbSource
 };

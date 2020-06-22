@@ -15,35 +15,15 @@ const dbsqlite = new sqlite3.Database(dbPath, (err) => {
   logger.info('Connected to the vesel SQlite database.');
 });
 
-let usbList = [];
-
-usbDetect.startMonitoring();
-usbDetect.on('add', () => {
-  const poll = setInterval(() => {
-    drivelist.list().then((drives) => {
-      // const drives = await drivelist.list();
-      console.log('drives', drives);
-
-      drives.forEach((drive) => {
-        if (drive.isUSB) {
-          const mountPath = drive.mountpoints[0].path;
-          if (!usbList.includes(mountPath)) {
-            console.log('mountPath', mountPath); //op
-            glob(`${mountPath}/*.png`, null, function (er, files) {
-              return new Promise((resolve, reject) => {
-                console.log('file', files);
-              });
-            });
-
-            usbList.push(mountPath);
-            clearInterval(poll)
-          }
-        }
-      })
-    })
-  }, 2000)
-});
-console.log('usblist', usbList);
+const dbFunction = (path) => {
+  let dbUSB = new sqlite3.Database(path, (err) => {
+    if (err) {
+      return logger.error(err.message);
+    }
+    logger.info('Connected to the USB SQlite database.');
+    return dbUSB
+  });
+}
 
 // pool.query('SELECT NOW()')
 //   .then(res => {
@@ -61,5 +41,7 @@ console.log('usblist', usbList);
 // });
 
 module.exports = {
-  dbsqlite
+  dbsqlite,
+  dbFunction,
+  sqlite3
 }
